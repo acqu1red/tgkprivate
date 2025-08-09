@@ -1,33 +1,10 @@
-import os
-import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# Supabase client for polling new user questions and notifying admin
-from typing import Optional, Any
-try:
-    from supabase import create_client  # type: ignore
-except Exception:
-    create_client = None
-
 API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
-
-# Set your admin Telegram user id here or via ENV ADMIN_ID
-ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))  # TODO: укажите ваш Telegram user id
-
-# Supabase config (anon key is fine for this bot polling pattern with permissive RLS)
-SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://uhhsrtmmuwoxsdquimaa.supabase.co')
-SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8')
-
-supabase: Optional[Any] = None
-if create_client is not None:
-    try:
-        supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-    except Exception:
-        supabase = None
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
@@ -38,7 +15,7 @@ async def send_welcome(message: types.Message):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     await message.answer("<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'pay')
@@ -58,7 +35,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
     period_text = {'1': '1 месяц', '6': '6 месяцев', '12': '12 месяцев'}[subscription_period]
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("Карта (любая валюта)", callback_data='pay_card'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     keyboard.add(InlineKeyboardButton("📜 Договор оферты", callback_data='offer_agreement'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_pay'))
     await bot.answer_callback_query(callback_query.id)
@@ -68,7 +45,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'more_info')
 async def process_more_info_callback(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_start'))
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
@@ -95,63 +72,13 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text="💵 Стоимость подписки на Базу\n1 месяц 1500 рублей\n6 месяцев 8000 рублей\n12 месяцев 10 000 рублей\n\n*цена в долларах/евро - конвертируется по нынешнему курсу\n\n*оплачивай любой картой в долларах/евро/рублях, бот сконвертирует сам\n\nОплатить и получить доступ\n👇👇👇", reply_markup=keyboard)
 
-
-async def poll_new_messages_and_notify_admin():
-    if ADMIN_ID == 0 or supabase is None:
-        return
-    last_checked_id_set = set()  # simple in-memory dedup within session
-    while True:
-        try:
-            # Get new user messages that were not notified yet
-            resp = supabase.table('messages').select('id, dialog_id, sender_tg_id, text, created_at, notified, user_username') \
-                .eq('sender_role', 'user') \
-                .eq('notified', False) \
-                .order('created_at', desc=False) \
-                .limit(50) \
-                .execute()
-
-            rows = getattr(resp, 'data', []) or []
-            for row in rows:
-                msg_id = row.get('id')
-                if msg_id in last_checked_id_set:
-                    continue
-
-                dialog_id = row.get('dialog_id')
-                tg_id = row.get('sender_tg_id')
-                username = row.get('user_username') or '—'
-                text = row.get('text') or ''
-
-                # Inline button to open the web app dialog for replying
-                reply_url = f"https://t.me/OSNOVAprivate_bot/formulaprivate?startapp=dialog={dialog_id}"
-                kb = InlineKeyboardMarkup()
-                kb.add(InlineKeyboardButton("Ответить", url=reply_url))
-
-                notify_text = (
-                    f"Новый вопрос от пользователя\n"
-                    f"ID: <code>{tg_id}</code>\n"
-                    f"Username: @{username}\n\n"
-                    f"Вопрос: {text[:1000]}"
-                )
-                try:
-                    await bot.send_message(chat_id=ADMIN_ID, text=notify_text, parse_mode=ParseMode.HTML, reply_markup=kb)
-                except Exception:
-                    pass
-
-                # mark as notified
-                try:
-                    supabase.table('messages').update({'notified': True}).eq('id', msg_id).execute()
-                except Exception:
-                    pass
-
-                last_checked_id_set.add(msg_id)
-        except Exception:
-            pass
-        await asyncio.sleep(5)
-
-
-async def on_startup(dp: Dispatcher):
-    # background polling for new messages
-    asyncio.create_task(poll_new_messages_and_notify_admin())
+@dp.callback_query_handler(lambda c: c.data == 'ask_question')
+async def process_ask_question_callback(callback_query: types.CallbackQuery):
+    # Direct link to the miniapp
+    miniapp_url = 't.me/OSNOVAprivate_bot/formulaprivate'
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(chat_id=callback_query.from_user.id,
+                           text=f'Откройте miniapp по следующей ссылке: {miniapp_url}')
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+    executor.start_polling(dp, skip_updates=True)
