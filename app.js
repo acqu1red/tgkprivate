@@ -85,6 +85,35 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { addMessage(reply, false); }, 1200);
   }
 
+  function openUserDialog(username) {
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+
+    const dialogHeader = document.createElement('h3');
+    dialogHeader.textContent = `Диалог с ${username}`;
+    dialog.appendChild(dialogHeader);
+
+    const dialogMessages = document.createElement('div');
+    dialogMessages.className = 'dialog-messages';
+    dialog.appendChild(dialogMessages);
+
+    const underReviewButton = document.createElement('button');
+    underReviewButton.textContent = 'На рассмотрении';
+    underReviewButton.addEventListener('click', () => {
+      console.log(`Диалог с ${username} на рассмотрении`);
+    });
+    dialog.appendChild(underReviewButton);
+
+    const completedButton = document.createElement('button');
+    completedButton.textContent = 'Закончен';
+    completedButton.addEventListener('click', () => {
+      console.log(`Диалог с ${username} завершен`);
+    });
+    dialog.appendChild(completedButton);
+
+    document.body.appendChild(dialog);
+  }
+
   async function sendMessage() {
     const text = input.value.trim();
     if (text.length === 0) return;
