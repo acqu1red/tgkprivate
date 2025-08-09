@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback MiniApp</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Администратор канала <span class="verified">✔️</span></h1>
+        </header>
+        <main>
+            <div id="chat">
+                <!-- Сообщения будут добавляться здесь -->
+            </div>
+            <div id="input-area">
+                <input type="text" id="message-input" placeholder="Введите сообщение...">
+                <input type="file" id="file-input">
+                <button id="send-button">Отправить</button>
+            </div>
+        </main>
+        <aside id="admin-panel">
+            <button id="admin-button">Панель администратора</button>
+            <div id="admin-list" class="hidden">
+                <!-- Список пользователей будет добавляться здесь -->
+            </div>
+        </aside>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
