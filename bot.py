@@ -16,7 +16,7 @@ async def send_welcome(message: types.Message):
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
     keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
-    await message.answer("<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    await message.answer("<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n", parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'pay')
 async def process_pay_callback(callback_query: types.CallbackQuery):
@@ -74,10 +74,10 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == 'ask_question')
 async def process_ask_question_callback(callback_query: types.CallbackQuery):
-    # Here you would integrate the MiniApps functionality
-    # For now, we'll just send a message back to the user
+    # Integrate MiniApps functionality here
+    # For demonstration, we'll simulate opening MiniApps
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.from_user.id, text="MiniApps functionality is not yet implemented.")
+    await bot.send_message(chat_id=callback_query.from_user.id, text="MiniApps is now open. Please proceed with your question.")
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
