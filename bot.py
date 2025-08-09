@@ -2,9 +2,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode
 from aiogram.utils import executor
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
+ADMIN_ID = 833263633  # ID администратора
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
@@ -71,6 +72,19 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text="💵 Стоимость подписки на Базу\n1 месяц 1500 рублей\n6 месяцев 8000 рублей\n12 месяцев 10 000 рублей\n\n*цена в долларах/евро - конвертируется по нынешнему курсу\n\n*оплачивай любой картой в долларах/евро/рублях, бот сконвертирует сам\n\nОплатить и получить доступ\n👇👇👇", reply_markup=keyboard)
+
+@dp.callback_query_handler(lambda c: c.data == 'ask_question')
+async def process_ask_question_callback(callback_query: types.CallbackQuery):
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", web_app=WebAppInfo(url="https://acqu1red.github.io/TGKaccount/")))
+    keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_start'))
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(
+        chat_id=callback_query.from_user.id, 
+        message_id=callback_query.message.message_id,
+        text="🎯 Есть вопросы? Нажмите кнопку ниже, чтобы открыть форму обратной связи.\n\nВы сможете задать свой вопрос администратору канала напрямую!", 
+        reply_markup=keyboard
+    )
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
