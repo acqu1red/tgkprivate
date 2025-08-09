@@ -95,3 +95,17 @@ main {
 .hidden {
     display: none;
 }
+
+#admin-header {
+    background-color: #3e3e3e;
+    padding: 10px;
+    text-align: center;
+    border-bottom: none;
+}
+
+#admin-header .verified {
+    color: #f5deb3;
+    text-shadow: 0 0 5px #f5deb3;
+    position: relative;
+    top: -2px;
+}

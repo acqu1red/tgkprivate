@@ -20,6 +20,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8';
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+  const adminId = 708907063;
+  const adminPanelButton = document.createElement('button');
+  adminPanelButton.id = 'admin-button';
+  adminPanelButton.textContent = 'Панель Администратора';
+  document.getElementById('input-area').appendChild(adminPanelButton);
+
+  adminPanelButton.addEventListener('click', async () => {
+    const { data: messages, error } = await supabaseClient
+      .from('messages')
+      .select('username, created_at, message_text')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Ошибка при получении сообщений:', error);
+      return;
+    }
+
+    const userMessages = messages.reduce((acc, message) => {
+      if (!acc[message.username]) {
+        acc[message.username] = [];
+      }
+      acc[message.username].push(message);
+      return acc;
+    }, {});
+
+    const userList = Object.entries(userMessages).map(([username, msgs]) => {
+      return {
+        username,
+        lastMessageDate: msgs[0].created_at,
+        messageCount: msgs.length,
+      };
+    });
+
+    console.log('Список пользователей:', userList);
+  });
+
   function addMessage(text, fromUser = true) {
     if (!text.trim()) return;
     const msg = document.createElement('div');
