@@ -19,6 +19,9 @@
   const adminPanel = document.getElementById('adminPanel');
   const closePanel = document.getElementById('closePanel');
   const conversationsEl = document.getElementById('conversations');
+  const controls = document.getElementById('statusControls');
+  const setPendingBtn = document.getElementById('setPending');
+  const setDoneBtn = document.getElementById('setDone');
 
   const tgUser = TG?.initDataUnsafe?.user;
   const currentUserId = tgUser?.id?.toString() || 'unknown';
@@ -27,6 +30,9 @@
 
   if (!isAdmin) {
     adminPanelBtn.style.display = 'none';
+    controls.classList.add('hidden');
+  } else {
+    controls.classList.remove('hidden');
   }
 
   // UI helpers
@@ -46,11 +52,7 @@
     if (conversationId) return conversationId;
     const { data, error } = await supabase
       .from('conversations')
-      .insert({
-        user_id: currentUserId,
-        username: currentUsername,
-        status: 'open'
-      })
+      .insert({ user_id: currentUserId, username: currentUsername, status: 'open' })
       .select('id')
       .single();
     if (error) throw error;
@@ -80,31 +82,15 @@
     if (file) {
       const ext = file.name.split('.').pop();
       const path = `${convId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('attachments').upload(path, file, {
-        upsert: false,
-        contentType: file.type || 'application/octet-stream'
-      });
-      if (upErr) {
-        alert('Не удалось загрузить файл');
-      } else {
+      const { error: upErr } = await supabase.storage.from('attachments').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      if (!upErr) {
         const { data: pub } = supabase.storage.from('attachments').getPublicUrl(path);
         fileUrl = pub.publicUrl;
       }
     }
-
-    const { error } = await supabase.from('messages').insert({
-      conversation_id: convId,
-      sender_id: currentUserId,
-      username: currentUsername,
-      text: text || null,
-      file_url: fileUrl,
-      notified: false
-    });
-    if (error) {
-      alert('Ошибка отправки');
-      return;
-    }
+    await supabase.from('messages').insert({ conversation_id: convId, sender_id: currentUserId, username: currentUsername, text: text || null, file_url: fileUrl, notified: false });
     textInput.value = '';
+    fileInput.value = '';
     await loadMessages();
   }
 
@@ -112,9 +98,7 @@
   function subscribeRealtime() {
     supabase.channel('messages-ch')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async (payload) => {
-        if (payload.new?.conversation_id === conversationId) {
-          await loadMessages();
-        }
+        if (payload.new?.conversation_id === conversationId) await loadMessages();
       })
       .subscribe();
   }
@@ -124,50 +108,27 @@
     const file = fileInput.files?.[0] || null;
     if (!text && !file) return;
     await sendMessage(text, file);
-    fileInput.value = '';
   });
-  textInput.addEventListener('keydown', async (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendBtn.click();
-    }
-  });
+  textInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); } });
 
-  adminPanelBtn.addEventListener('click', () => {
-    if (!isAdmin) return;
-    adminPanel.classList.remove('hidden');
-    setTimeout(() => adminPanel.classList.add('show'), 10);
-    loadConversations();
-  });
-  document.getElementById('closePanel').addEventListener('click', () => {
-    adminPanel.classList.remove('show');
-    setTimeout(() => adminPanel.classList.add('hidden'), 250);
-  });
+  adminPanelBtn.addEventListener('click', () => { if (!isAdmin) return; adminPanel.classList.remove('hidden'); setTimeout(() => adminPanel.classList.add('show'), 10); loadConversations(); });
+  closePanel.addEventListener('click', () => { adminPanel.classList.remove('show'); setTimeout(() => adminPanel.classList.add('hidden'), 250); });
 
   async function loadConversations() {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(100);
-    if (error) return;
+    const { data } = await supabase.from('conversations').select('*').order('updated_at', { ascending: false }).limit(100);
     conversationsEl.innerHTML = '';
-    for (const c of data) {
+    for (const c of data || []) {
       const item = document.createElement('div');
       item.className = 'item';
       item.innerHTML = `<div><b>@${c.username || 'user'}</b><div class="meta">${new Date(c.updated_at).toLocaleString()} • ${c.status}</div></div><button data-id="${c.id}">Открыть</button>`;
-      item.querySelector('button').addEventListener('click', async () => {
-        conversationId = c.id;
-        await loadMessages();
-      });
+      item.querySelector('button').addEventListener('click', async () => { conversationId = c.id; await loadMessages(); });
       conversationsEl.appendChild(item);
     }
   }
 
-  async function setStatus(status) {
-    if (!conversationId) return;
-    await supabase.from('conversations').update({ status }).eq('id', conversationId);
-  }
+  async function setStatus(status) { if (!conversationId) return; await supabase.from('conversations').update({ status }).eq('id', conversationId); }
+  setPendingBtn.addEventListener('click', () => isAdmin && setStatus('pending'));
+  setDoneBtn.addEventListener('click', () => isAdmin && setStatus('done'));
 
   // Управление статусами — добавьте UI под отправкой (в реале лучше отдельные кнопки)
   // Для краткости тут добавим горячие клавиши:
@@ -177,9 +138,5 @@
     if (e.key.toLowerCase() === 'd') setStatus('done');
   });
 
-  (async function init() {
-    await ensureConversation();
-    await loadMessages();
-    subscribeRealtime();
-  })();
+  (async function init() { await ensureConversation(); await loadMessages(); subscribeRealtime(); })();
 })();
