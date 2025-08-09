@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Telegram WebApp (optional UI tweaks)
+    if (window.Telegram && window.Telegram.WebApp) {
+        try {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.enableClosingConfirmation();
+            Telegram.WebApp.ready();
+        } catch (e) {
+            console.warn('Telegram WebApp init warning:', e);
+        }
+    }
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
     const fileInput = document.getElementById('file-input');
