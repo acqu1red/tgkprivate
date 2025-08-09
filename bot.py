@@ -10,7 +10,7 @@ API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
 WEBAPP_URL = 'https://acqu1red.github.io/tgkprivate/'
 SUPABASE_URL = 'https://uhhsrtmmuwoxsdquimaa.supabase.co'
 SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8'
-ADMIN_TELEGRAM_ID = 123456789  # ЗАМЕНИТЕ на реальный ID админа
+ADMIN_TELEGRAM_ID = 708907063  # ЗАМЕНИТЕ на реальный ID админа
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
