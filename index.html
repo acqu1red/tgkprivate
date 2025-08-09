@@ -197,7 +197,6 @@
 </head>
 <body>
 <div id="root"></div>
-<button id="ask-question-btn"> 17адать вопрос</button>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -210,7 +209,8 @@
 
   // Авторизация через Telegram MiniApp
   // Telegram web apps предоставляют window.Telegram.WebApp для информации о пользователе
-  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
+  const isTelegram = !!window.Telegram?.WebApp;
+  let tgUser = null;
 
   // --- Роли ---
   // isAdmin будет подтягиваться из таблицы users (при регистрации)
@@ -229,7 +229,7 @@
 
   async function getOrCreateUser() {
     if (!tgUser) {
-      root.innerHTML = '<p style="padding:20px; text-align:center;">Ошибка: Не удалось получить данные пользователя Telegram.</p>';
+      root.innerHTML = '<p style="padding:20px; text-align:center;">Откройте мини‑приложение через Telegram по кнопке «Задать вопрос» в боте.</p>';
       throw new Error('Telegram user data not found');
     }
     // Проверяем есть ли пользователь в БД
@@ -543,6 +543,23 @@
 
   async function init() {
     try {
+      if (!isTelegram) {
+        root.innerHTML = `
+          <main style="padding:20px; text-align:center;">
+            <p>Это мини‑приложение Telegram. Пожалуйста, откройте его из бота по кнопке «Задать вопрос».</p>
+            <p>
+              <a href="https://t.me/OSNOVAprivate_bot/formulaprivate" target="_blank" rel="noopener" style="color:#f0eadf; text-decoration:underline;">Открыть в Telegram</a>
+            </p>
+          </main>
+        `;
+        return;
+      }
+
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      try { tg.expand(); } catch (_) {}
+      tgUser = tg?.initDataUnsafe?.user || null;
+
       await getOrCreateUser();
       await refreshUI();
     } catch(e) {
@@ -552,23 +569,6 @@
   }
 
   init();
-
-  document.getElementById('ask-question-btn').addEventListener('click', async () => {
-    // Trigger the MiniApps functionality
-    const response = await fetch('/miniapp/question', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        user_id: currentUser.id,
-        question: 'Your question here'
-      })
-    });
-
-    const result = await response.json();
-    alert(result.message);
-  });
 
 </script>
 </body>
