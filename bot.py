@@ -7,6 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
+from aiogram.types.web_app_info import WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
@@ -17,7 +18,12 @@ def build_start_keyboard() -> InlineKeyboardBuilder:
     keyboard_builder = InlineKeyboardBuilder()
     keyboard_builder.row(InlineKeyboardButton(text="💳 Оплатить доступ", callback_data="pay"))
     keyboard_builder.row(InlineKeyboardButton(text="ℹ️ Подробнее о канале", callback_data="more_info"))
-    keyboard_builder.row(InlineKeyboardButton(text="❓ Задать вопрос", callback_data="ask_question"))
+    keyboard_builder.row(
+        InlineKeyboardButton(
+            text="❓ Задать вопрос",
+            web_app=WebAppInfo(url="https://acqu1red.github.io/tgkprivate/")
+        )
+    )
     return keyboard_builder
 
 
@@ -33,7 +39,12 @@ def build_pay_keyboard() -> InlineKeyboardBuilder:
 def build_subscription_keyboard() -> InlineKeyboardBuilder:
     keyboard_builder = InlineKeyboardBuilder()
     keyboard_builder.row(InlineKeyboardButton(text="Карта (любая валюта)", callback_data="pay_card"))
-    keyboard_builder.row(InlineKeyboardButton(text="❓ Задать вопрос", callback_data="ask_question"))
+    keyboard_builder.row(
+        InlineKeyboardButton(
+            text="❓ Задать вопрос",
+            web_app=WebAppInfo(url="https://acqu1red.github.io/tgkprivate/")
+        )
+    )
     keyboard_builder.row(InlineKeyboardButton(text="📜 Договор оферты", callback_data="offer_agreement"))
     keyboard_builder.row(InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_pay"))
     return keyboard_builder
@@ -109,25 +120,17 @@ async def process_more_info_callback(callback: CallbackQuery) -> None:
         "Решай."
     )
     keyboard_builder = InlineKeyboardBuilder()
-    keyboard_builder.row(InlineKeyboardButton(text="❓ Задать вопрос", callback_data="ask_question"))
+    keyboard_builder.row(
+        InlineKeyboardButton(
+            text="❓ Задать вопрос",
+            web_app=WebAppInfo(url="https://acqu1red.github.io/tgkprivate/")
+        )
+    )
     keyboard_builder.row(InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_start"))
     await callback.message.edit_text(info_text, reply_markup=keyboard_builder.as_markup())
 
 
-@router.callback_query(F.data == "ask_question")
-async def process_ask_question_callback(callback: CallbackQuery) -> None:
-    await callback.answer()
-    keyboard_builder = InlineKeyboardBuilder()
-    keyboard_builder.row(
-        InlineKeyboardButton(
-            text="Открыть мини-приложение",
-            url="https://acqu1red.github.io/tgkprivate/",
-        )
-    )
-    await callback.message.answer(
-        "Откройте мини-приложение для отправки вопроса:",
-        reply_markup=keyboard_builder.as_markup(),
-    )
+## Обработчик для ask_question больше не нужен: кнопка открывает мини-приложение через web_app
 
 
 @router.callback_query(F.data == "back_to_start")
