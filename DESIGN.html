@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Поддержка — Мини-приложение</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: #121212;
+    font-family: 'Inter', sans-serif;
+    color: #f0eadf; /* светло-бежевый текст */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Верхний бар с бежевой обводкой и свечением */
+  header {
+    background: #1f1f1f;
+    padding: 16px 0;
+    text-align: center;
+    position: relative;
+    border: 2px solid #d6c7b8; /* бежевый */
+    box-shadow: 0 0 14px 3px #d6c7b888;
+    user-select: none;
+    border-radius: 12px;
+    margin: 12px 16px 8px 16px;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: #f0eadf; /* светло-бежевый */
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  /* Галочка */
+  .checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #d6c7b8;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 8px #d6c7b888;
+  }
+  .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 3.5px;
+    width: 6px;
+    height: 12px;
+    border: solid #121212;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+  }
+
+  main {
+    flex-grow: 1;
+    padding: 16px 20px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #121212 0%, #1a1a1a 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Сообщения пользователя — светло-бежевый фон */
+  .message.user {
+    align-self: flex-start;
+    background: #f0eadf; /* светло-бежевый */
+    color: #121212;
+    padding: 14px 20px;
+    border-radius: 16px 16px 16px 6px;
+    max-width: 70%;
+    box-shadow: 0 5px 15px rgb(240 234 223 / 0.45);
+    font-size: 1rem;
+    line-height: 1.4;
+    animation: slideInLeft 0.3s ease forwards;
+    word-break: break-word;
+  }
+
+  /* Сообщения администратора — без заливки, только бежевый бордер */
+  .message.admin {
+    align-self: flex-end;
+    background: transparent;
+    border: 2px solid #d6c7b8; /* бежевый */
+    color: #f0eadf;
+    padding: 14px 20px;
+    border-radius: 16px 16px 6px 16px;
+    max-width: 70%;
+    box-shadow: none;
+    font-size: 1rem;
+    line-height: 1.4;
+    animation: slideInRight 0.3s ease forwards;
+    word-break: break-word;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  footer {
+    background: #1f1f1f;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 -1px 6px rgba(0,0,0,0.7);
+  }
+  footer input[type="text"] {
+    flex-grow: 1;
+    padding: 14px 18px;
+    border-radius: 30px;
+    border: 2px solid #d6c7b8; /* бежевый */
+    outline: none;
+    font-size: 1.05rem;
+    background: #121212;
+    color: #f0eadf;
+    box-shadow: none;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    font-weight: 500;
+  }
+  footer input[type="text"]:focus {
+    border-color: #f0eadf;
+    box-shadow: 0 0 12px #f0eadfcc;
+  }
+
+  button {
+    background: none;
+    border: none;
+    color: #f0eadf;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  button:hover {
+    background-color: #d6c7b844;
+    transform: scale(1.15);
+  }
+  button:active {
+    transform: scale(0.95);
+  }
+
+  /* Значок скрепки - чуть меньше и сдвинут вниз */
+  #attachBtn svg {
+    width: 20px;
+    height: 20px;
+    transform: translateY(2px);
+  }
+  /* Значок отправки - чуть меньше */
+  #sendBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  main::-webkit-scrollbar {
+    width: 9px;
+  }
+  main::-webkit-scrollbar-track {
+    background: #1f1f1f;
+  }
+  main::-webkit-scrollbar-thumb {
+    background: #d6c7b888;
+    border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    Администратор
+    <span class="checkmark" title="Подтвержденный администратор"></span>
+  </h1>
+</header>
+<main id="chat">
+  <div class="message admin">Здравствуйте! Чем могу помочь?</div>
+</main>
+<footer>
+  <input type="text" id="inputMessage" placeholder="Напишите сообщение..." autocomplete="off" />
+  <button id="attachBtn" title="Прикрепить файл" aria-label="Прикрепить файл">
+    <svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16.5 6.5L7.25 15.75a3.75 3.75 0 0 1-5.3-5.3l10.06-10.07a5 5 0 1 1 7.07 7.07L11 17.07a2 2 0 0 1-2.83-2.83l7.14-7.14"/>
+    </svg>
+  </button>
+  <button id="sendBtn" title="Отправить сообщение" aria-label="Отправить сообщение">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+    </svg>
+  </button>
+</footer>
+
+<script>
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('inputMessage');
+  const sendBtn = document.getElementById('sendBtn');
+  const attachBtn = document.getElementById('attachBtn');
+
+  function addMessage(text, fromUser = true) {
+    if (!text.trim()) return;
+    const msg = document.createElement('div');
+    msg.className = 'message ' + (fromUser ? 'user' : 'admin');
+    msg.textContent = text;
+    chat.appendChild(msg);
+    chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+  }
+
+  function adminReply(userText) {
+    const replies = [
+      "Спасибо за сообщение, я сейчас посмотрю.",
+      "Понял, держите меня в курсе.",
+      "Могу помочь с этим вопросом, расскажите подробнее.",
+      "Ваш запрос принят, скоро свяжемся.",
+      "Спасибо за обратную связь!"
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+
+    setTimeout(() => {
+      addMessage(reply, false);
+    }, 1200);
+  }
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (text.length === 0) return;
+    addMessage(text, true);
+    input.value = '';
+    adminReply(text);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  attachBtn.addEventListener('click', () => {
+    alert('Функция прикрепления файлов в демо отключена');
+  });
+</script>
+</body>
+</html>
