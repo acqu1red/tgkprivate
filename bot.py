@@ -74,10 +74,10 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == 'ask_question')
 async def process_ask_question_callback(callback_query: types.CallbackQuery):
-    # Integrate MiniApps functionality here
-    # For demonstration, we'll simulate opening MiniApps
+    # Simulate opening MiniApps
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.from_user.id, text="MiniApps is now open. Please proceed with your question.")
+    await bot.send_message(chat_id=callback_query.from_user.id, text="Opening MiniApps...")
+    # Here you would add the actual code to open MiniApps
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
