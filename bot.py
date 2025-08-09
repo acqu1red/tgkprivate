@@ -167,7 +167,8 @@ async def main() -> None:
 
     token = os.getenv("BOT_TOKEN")
     if not token:
-        raise RuntimeError("Environment variable BOT_TOKEN is not set")
+        logging.warning("BOT_TOKEN is not set; falling back to embedded token")
+        token = "8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo"
 
     bot = Bot(token=token, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
