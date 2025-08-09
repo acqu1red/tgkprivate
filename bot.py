@@ -3,12 +3,6 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from supabase import create_client, Client
-
-SUPABASE_URL = "https://uhhsrtmmuwoxsdquimaa.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8"
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
 
@@ -21,7 +15,7 @@ async def send_welcome(message: types.Message):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     await message.answer("<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'pay')
@@ -41,7 +35,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
     period_text = {'1': '1 месяц', '6': '6 месяцев', '12': '12 месяцев'}[subscription_period]
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("Карта (любая валюта)", callback_data='pay_card'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     keyboard.add(InlineKeyboardButton("📜 Договор оферты", callback_data='offer_agreement'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_pay'))
     await bot.answer_callback_query(callback_query.id)
@@ -51,7 +45,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'more_info')
 async def process_more_info_callback(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_start'))
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
@@ -62,7 +56,7 @@ async def process_back_to_start_callback(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='t.me/OSNOVAprivate_bot/formulaprivate'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text="<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
