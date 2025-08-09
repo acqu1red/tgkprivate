@@ -3,6 +3,12 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from supabase import create_client, Client
+
+SUPABASE_URL = "https://uhhsrtmmuwoxsdquimaa.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8"
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
 
