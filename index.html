@@ -229,8 +229,15 @@
 
   async function getOrCreateUser() {
     if (!tgUser) {
-      root.innerHTML = '<p style="padding:20px; text-align:center;">Откройте мини‑приложение через Telegram по кнопке «Задать вопрос» в боте.</p>';
-      throw new Error('Telegram user data not found');
+      root.innerHTML = `
+        <main style="padding:20px; text-align:center;">
+          <p>Откройте мини‑приложение через Telegram по кнопке «Задать вопрос» в боте.</p>
+          <p>
+            <a href="https://t.me/OSNOVAprivate_bot/formulaprivate" target="_blank" rel="noopener" style="color:#f0eadf; text-decoration:underline;">Открыть в Telegram</a>
+          </p>
+        </main>
+      `;
+      return false;
     }
     // Проверяем есть ли пользователь в БД
     let { data, error } = await supabase.from('users').select().eq('id', tgUser.id).single();
@@ -560,10 +567,11 @@
       try { tg.expand(); } catch (_) {}
       tgUser = tg?.initDataUnsafe?.user || null;
 
-      await getOrCreateUser();
+      const ok = await getOrCreateUser();
+      if (!ok) return;
       await refreshUI();
     } catch(e) {
-      root.innerHTML = `<p style="padding:20px; text-align:center; color:#f00;">Ошибка: ${e.message}</p>`;
+      root.innerHTML = `<p style="padding:20px; text-align:center;">Не удалось инициализировать приложение. Попробуйте открыть через бота ещё раз.</p>`;
       console.error(e);
     }
   }
