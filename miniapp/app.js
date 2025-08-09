@@ -45,29 +45,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminPanel = document.getElementById('admin-panel');
 
   adminButton.addEventListener('click', async () => {
-    const { data: messages, error } = await supabaseClient
+    const { data: users, error } = await supabaseClient
       .from('messages')
-      .select('username, created_at, message_text')
+      .select('username, created_at, count')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching users:', error);
       return;
     }
 
     adminPanel.innerHTML = '';
-    messages.forEach(message => {
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = `${message.username} - ${message.created_at} - ${message.message_text}`;
-      adminPanel.appendChild(messageDiv);
+    users.forEach(user => {
+      const userDiv = document.createElement('div');
+      userDiv.textContent = `${user.username} - ${user.created_at} - ${user.count} messages`;
+      adminPanel.appendChild(userDiv);
 
-      messageDiv.addEventListener('click', () => {
+      userDiv.addEventListener('click', () => {
         // Open dialog with user
         // Add logic to handle dialog
       });
     });
-
-    adminPanel.classList.toggle('hidden');
   });
 
   async function sendMessage() {
