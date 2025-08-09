@@ -119,10 +119,20 @@ async def update_dialog_status(dialog_id: str, status: str):
         raise HTTPException(status_code=400, detail=res.error.message)
     return {"message": "Status updated"}
 
-@app.post("/ask-question/")
-async def ask_question():
-    # Logic to trigger the miniapp
-    return {"message": "Miniapp triggered"}
+@app.post("/miniapp/question")
+async def handle_miniapp_question(request: Request):
+    # Extract data from the request
+    data = await request.json()
+    user_id = data.get('user_id')
+    question = data.get('question')
+
+    # Here you would handle the question, possibly interacting with Supabase or other services
+    # For now, we'll just return a simple response
+    response = {
+        "status": "success",
+        "message": "Your question has been received."
+    }
+    return response
 
 # --- Telegram уведомления ---
 
