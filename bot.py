@@ -74,10 +74,9 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == 'ask_question')
 async def process_ask_question_callback(callback_query: types.CallbackQuery):
-    # Simulate opening MiniApps
+    # Open MiniApps directly
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.from_user.id, text="Opening MiniApps...")
-    # Here you would add the actual code to open MiniApps
+    await bot.send_message(chat_id=callback_query.from_user.id, text="[Open MiniApps](t.me/OSNOVAprivate_bot/formulaprivate)", parse_mode=ParseMode.MARKDOWN)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
