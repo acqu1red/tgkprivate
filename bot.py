@@ -7,11 +7,11 @@ from aiogram.utils import executor
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Supabase client for polling new user questions and notifying admin
+from typing import Optional, Any
 try:
-    from supabase import create_client, Client  # type: ignore
+    from supabase import create_client  # type: ignore
 except Exception:
     create_client = None
-    Client = None
 
 API_TOKEN = '8354723250:AAEWcX6OojEi_fN-RAekppNMVTAsQDU0wvo'
 
@@ -22,7 +22,7 @@ ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))  # TODO: укажите ваш Telegr
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://uhhsrtmmuwoxsdquimaa.supabase.co')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8')
 
-supabase: Client | None = None
+supabase: Optional[Any] = None
 if create_client is not None:
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
