@@ -21,40 +21,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const adminId = 708907063;
-  const adminPanelButton = document.createElement('button');
-  adminPanelButton.id = 'admin-button';
-  adminPanelButton.textContent = 'Панель Администратора';
-  document.getElementById('input-area').appendChild(adminPanelButton);
+  const userId = window.Telegram.WebApp.initDataUnsafe.user.id; // Получаем реальный user_id
 
-  adminPanelButton.addEventListener('click', async () => {
-    const { data: messages, error } = await supabaseClient
-      .from('messages')
-      .select('username, created_at, message_text')
-      .order('created_at', { ascending: false });
+  if (userId === adminId) {
+    const adminPanelButton = document.createElement('button');
+    adminPanelButton.id = 'admin-button';
+    adminPanelButton.textContent = 'Панель Администратора';
+    document.getElementById('input-area').appendChild(adminPanelButton);
 
-    if (error) {
-      console.error('Ошибка при получении сообщений:', error);
-      return;
-    }
+    adminPanelButton.addEventListener('click', async () => {
+      const { data: messages, error } = await supabaseClient
+        .from('messages')
+        .select('username, created_at, message_text')
+        .order('created_at', { ascending: false });
 
-    const userMessages = messages.reduce((acc, message) => {
-      if (!acc[message.username]) {
-        acc[message.username] = [];
+      if (error) {
+        console.error('Ошибка при получении сообщений:', error);
+        return;
       }
-      acc[message.username].push(message);
-      return acc;
-    }, {});
 
-    const userList = Object.entries(userMessages).map(([username, msgs]) => {
-      return {
-        username,
-        lastMessageDate: msgs[0].created_at,
-        messageCount: msgs.length,
-      };
+      const userMessages = messages.reduce((acc, message) => {
+        if (!acc[message.username]) {
+          acc[message.username] = [];
+        }
+        acc[message.username].push(message);
+        return acc;
+      }, {});
+
+      const userList = Object.entries(userMessages).map(([username, msgs]) => {
+        return {
+          username,
+          lastMessageDate: msgs[0].created_at,
+          messageCount: msgs.length,
+        };
+      });
+
+      console.log('Список пользователей:', userList);
     });
-
-    console.log('Список пользователей:', userList);
-  });
+  }
 
   function addMessage(text, fromUser = true) {
     if (!text.trim()) return;
@@ -120,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (text.length === 0) return;
     addMessage(text, true);
     input.value = '';
-    const userId = window.Telegram.WebApp.initDataUnsafe.user.id; // Получаем реальный user_id
     try {
       await addMessageToSupabase(userId, text);
     } catch (e) {
