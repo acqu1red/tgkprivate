@@ -158,6 +158,13 @@ async def process_back_to_pay_callback(callback: CallbackQuery) -> None:
 
 
 async def main() -> None:
+    # Load environment variables from .env if present
+    try:
+        from dotenv import load_dotenv  # type: ignore
+        load_dotenv()
+    except Exception:
+        pass
+
     token = os.getenv("BOT_TOKEN")
     if not token:
         raise RuntimeError("Environment variable BOT_TOKEN is not set")
