@@ -37,42 +37,24 @@ document.addEventListener('DOMContentLoaded', () => {
     else console.log('Сообщение добавлено:', data);
   }
 
-  // Remove automatic replies
-  // adminReply(text);
-
-  // Add admin panel functionality
-  const adminButton = document.getElementById('admin-button');
-  const adminPanel = document.getElementById('admin-panel');
-
-  adminButton.addEventListener('click', async () => {
-    const { data: users, error } = await supabaseClient
-      .from('messages')
-      .select('username, created_at, count')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching users:', error);
-      return;
-    }
-
-    adminPanel.innerHTML = '';
-    users.forEach(user => {
-      const userDiv = document.createElement('div');
-      userDiv.textContent = `${user.username} - ${user.created_at} - ${user.count} messages`;
-      adminPanel.appendChild(userDiv);
-
-      userDiv.addEventListener('click', () => {
-        // Open dialog with user
-        // Add logic to handle dialog
-      });
-    });
-  });
+  function adminReply(userText) {
+    const replies = [
+      'Спасибо за сообщение, я сейчас посмотрю.',
+      'Понял, держите меня в курсе.',
+      'Могу помочь с этим вопросом, расскажите подробнее.',
+      'Ваш запрос принят, скоро свяжемся.',
+      'Спасибо за обратную связь!',
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    setTimeout(() => { addMessage(reply, false); }, 1200);
+  }
 
   async function sendMessage() {
     const text = input.value.trim();
     if (text.length === 0) return;
     addMessage(text, true);
     input.value = '';
+    adminReply(text);
     try {
       await addMessageToSupabase(1, text); // TODO: заменить 1 на реальный user_id
     } catch (e) {
