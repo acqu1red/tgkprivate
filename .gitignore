@@ -1,31 +1,12 @@
 # Python
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-dist/
-build/
+*.pyc
+.env
 
-# Virtual environments
-venv/
-.env/
-.venv/
-
-# Node
+# Node/Web
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.dist/
 
-# macOS
+# OS
 .DS_Store
-
-# Editors
-.idea/
-.vscode/
-
-# Logs
-*.log
 
