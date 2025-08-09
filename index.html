@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Поддержка — MiniApp</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+  body,html,#root {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Inter', sans-serif;
+    background: #121212;
+    color: #f0eadf;
+    display: flex;
+    flex-direction: column;
+  }
+  #root {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 16px;
+    border-bottom: 2px solid #d6c7b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  header h1 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  header svg polygon {
+    fill: #f0eadf;
+  }
+  header svg path {
+    stroke: #121212;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform-origin: center;
+    transform-box: fill-box;
+    transform: scale(0.84) translate(2.0px, 0.8px);
+  }
+
+  main {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .messages {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+
+  .message {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 1rem;
+    line-height: 1.3;
+    word-break: break-word;
+    animation: fadeIn 0.3s ease;
+  }
+  .message.user {
+    background: #f0eadf;
+    color: #121212;
+    border-radius: 16px 16px 16px 6px;
+    align-self: flex-start;
+    box-shadow: 0 4px 10px rgb(240 234 223 / 0.45);
+  }
+  .message.admin {
+    border: 2px solid #d6c7b8;
+    background: transparent;
+    color: #f0eadf;
+    border-radius: 16px 16px 6px 16px;
+    align-self: flex-end;
+    box-shadow: none;
+  }
+
+  @keyframes fadeIn {
+    from {opacity:0;}
+    to {opacity:1;}
+  }
+
+  footer {
+    display: flex;
+    padding: 12px 16px;
+    border-top: 2px solid #d6c7b8;
+    background: #1f1f1f;
+    gap: 12px;
+  }
+  footer input[type="text"] {
+    flex-grow: 1;
+    padding: 14px 18px;
+    border-radius: 30px;
+    border: 2px solid #d6c7b8;
+    background: #121212;
+    color: #f0eadf;
+    font-weight: 500;
+    font-size: 1.05rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  footer input[type="text"]:focus {
+    border-color: #f0eadf;
+    box-shadow: 0 0 10px #f0eadfcc;
+  }
+  footer button {
+    background: none;
+    border: none;
+    color: #f0eadf;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+  }
+  footer button:hover {
+    background-color: #d6c7b844;
+    transform: scale(1.15);
+  }
+  footer button:active {
+    transform: scale(0.95);
+  }
+  footer svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .admin-panel {
+    padding: 12px 16px;
+    border-top: 2px solid #d6c7b8;
+    background: #1f1f1f;
+    font-size: 1rem;
+    color: #f0eadf;
+    overflow-y: auto;
+  }
+  .admin-panel h2 {
+    margin-top: 0;
+    font-weight: 600;
+    font-size: 1.3rem;
+  }
+  .user-list {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .user-list li {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .user-list li:hover {
+    background-color: #d6c7b811;
+  }
+  .dialog-status {
+    font-size: 0.85rem;
+    color: #d6c7b8aa;
+  }
+  .dialog-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 12px;
+  }
+  .dialog-actions button {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 2px solid #d6c7b8;
+    background: transparent;
+    color: #f0eadf;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  .dialog-actions button:hover {
+    background-color: #d6c7b811;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  // Конфиги Supabase
+  const SUPABASE_URL = 'https://uhhsrtmmuwoxsdquimaa.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Авторизация через Telegram MiniApp
+  // Telegram web apps предоставляют window.Telegram.WebApp для информации о пользователе
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
+
+  // --- Роли ---
+  // isAdmin будет подтягиваться из таблицы users (при регистрации)
+  let currentUser = null;
+  let isAdmin = false;
+
+  // Состояния
+  let dialogs = [];
+  let currentDialog = null;
+  let messages = [];
+
+  // UI элементы
+  const root = document.getElementById('root');
+
+  // --- Вспомогательные функции ---
+
+  async function getOrCreateUser() {
+    if (!tgUser) {
+      root.innerHTML = '<p style="padding:20px; text-align:center;">Ошибка: Не удалось получить данные пользователя Telegram.</p>';
+      throw new Error('Telegram user data not found');
+    }
+    // Проверяем есть ли пользователь в БД
+    let { data, error } = await supabase.from('users').select().eq('id', tgUser.id).single();
+
+    if (error && error.code === 'PGRST116') {
+      // Если пользователя нет — создаём
+      const { data: newUser, error: insertError } = await supabase.from('users').insert({
+        id: tgUser.id,
+        username: tgUser.username || null,
+        is_admin: false,
+      }).select().single();
+      if (insertError) throw insertError;
+      currentUser = newUser;
+      isAdmin = false;
+    } else if (error) {
+      throw error;
+    } else {
+      currentUser = data;
+      isAdmin = data.is_admin;
+    }
+  }
+
+  async function fetchDialogs() {
+    if (!currentUser) return;
+
+    if (isAdmin) {
+      // Админ видит все открытые/в работе диалоги
+      let { data, error } = await supabase
+        .from('dialogs')
+        .select(`*, user:users(id, username)`)
+        .neq('status', 'closed')
+        .order('updated_at', { ascending: false });
+      if (error) throw error;
+      dialogs = data;
+    } else {
+      // Пользователь видит только свои диалоги
+      let { data, error } = await supabase
+        .from('dialogs')
+        .select()
+        .eq('user_id', currentUser.id)
+        .order('updated_at', { ascending: false });
+      if (error) throw error;
+      dialogs = data;
+    }
+  }
+
+  async function fetchMessages(dialogId) {
+    if (!dialogId) return;
+    let { data, error } = await supabase
+      .from('messages')
+      .select()
+      .eq('dialog_id', dialogId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    messages = data;
+  }
+
+  async function createDialog() {
+    if (!currentUser) return;
+    const { data, error } = await supabase.from('dialogs').insert({
+      user_id: currentUser.id,
+      status: 'open',
+    }).select().single();
+    if (error) {
+      alert('Ошибка при создании диалога');
+      return null;
+    }
+    dialogs.unshift(data);
+    return data;
+  }
+
+  async function sendMessage(content, sender = 'user') {
+    if (!currentDialog) return;
+    if (!content.trim()) return;
+    const { data, error } = await supabase.from('messages').insert({
+      dialog_id: currentDialog.id,
+      sender,
+      content,
+    }).select().single();
+    if (error) {
+      alert('Ошибка при отправке сообщения');
+      return null;
+    }
+    messages.push(data);
+    await supabase.from('dialogs').update({ updated_at: new Date().toISOString() }).eq('id', currentDialog.id);
+    return data;
+  }
+
+  async function updateDialogStatus(dialogId, status) {
+    const { error } = await supabase.from('dialogs').update({ status, updated_at: new Date().toISOString() }).eq('id', dialogId);
+    if (error) {
+      alert('Ошибка при обновлении статуса диалога');
+      return false;
+    }
+    dialogs = dialogs.map(d => d.id === dialogId ? { ...d, status } : d);
+    return true;
+  }
+
+  // --- Рендеринг ---
+
+  function renderHeader() {
+    if (isAdmin) {
+      root.innerHTML = `
+      <header>
+        <h1>Панель администратора</h1>
+      </header>
+      `;
+    } else {
+      root.innerHTML = `
+      <header>
+        <h1>
+          Администратор канала
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Подтвержденный пользователь" role="img" style="width:24px;height:24px;vertical-align:middle;margin-left:8px;filter:drop-shadow(0 0 6px #f0eadf);">
+            <polygon points="12 1.5 16.5 8.5 23 9.5 18.5 15 19.5 22.5 12 18.5 4.5 22.5 5.5 15 1 9.5 7.5 8.5" fill="#f0eadf"/>
+            <path d="M8 12.5l3 3 5-6" stroke="#121212" stroke-width="2.5" style="transform-origin:center; transform-box:fill-box; transform: scale(0.84) translate(2.0px, 0.8px);"/>
+          </svg>
+        </h1>
+      </header>
+      `;
+    }
+  }
+
+  function renderMessages() {
+    const container = document.createElement('div');
+    container.className = 'messages';
+    messages.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'message ' + (msg.sender === 'user' ? 'user' : 'admin');
+      div.textContent = msg.content;
+      container.appendChild(div);
+    });
+    return container;
+  }
+
+  function renderUserUI() {
+    renderHeader();
+
+    const main = document.createElement('main');
+
+    if (!dialogs.length) {
+      const p = document.createElement('p');
+      p.textContent = 'У вас пока нет диалогов.';
+      p.style.padding = '16px';
+      main.appendChild(p);
+    } else {
+      if (!currentDialog) currentDialog = dialogs[0];
+      main.appendChild(renderMessages());
+    }
+
+    const footer = document.createElement('footer');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Напишите сообщение...';
+    input.autocomplete = 'off';
+
+    footer.appendChild(input);
+
+    const attachBtn = document.createElement('button');
+    attachBtn.title = 'Прикрепить файл';
+    attachBtn.ariaLabel = 'Прикрепить файл';
+    attachBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px; transform: translateY(2px);">
+      <path d="M16.5 6.5L7.25 15.75a3.75 3.75 0 0 1-5.3-5.3l10.06-10.07a5 5 0 1 1 7.07 7.07L11 17.07a2 2 0 0 1-2.83-2.83l7.14-7.14"/>
+    </svg>`;
+    footer.appendChild(attachBtn);
+
+    const sendBtn = document.createElement('button');
+    sendBtn.title = 'Отправить сообщение';
+    sendBtn.ariaLabel = 'Отправить сообщение';
+    sendBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" style="width:20px; height:20px;">
+      <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+    </svg>`;
+    footer.appendChild(sendBtn);
+
+    sendBtn.addEventListener('click', async () => {
+      if (!input.value.trim()) return;
+      await sendMessage(input.value.trim(), 'user');
+      input.value = '';
+      await refreshUI();
+      notifyAdminNewMessage();
+    });
+
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    attachBtn.addEventListener('click', () => alert('Функция прикрепления пока недоступна'));
+
+    root.appendChild(main);
+    root.appendChild(footer);
+  }
+
+  // Отправка уведомления администратору через Telegram-бота (черновой вызов, понадобится отдельный backend)
+  async function notifyAdminNewMessage() {
+    // Здесь нужно сделать fetch на backend Telegram-бота с данными о новом сообщении
+    // Например:
+    /*
+    await fetch('https://yourbackend.com/api/notify_admin', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: currentUser.id,
+        username: currentUser.username,
+        dialog_id: currentDialog.id,
+        message: messages[messages.length -1].content
+      }),
+      headers: {'Content-Type': 'application/json'}
+    });
+    */
+  }
+
+  // --- Админская панель ---
+
+  function renderAdminPanel() {
+    renderHeader();
+    root.innerHTML += `<div class="admin-panel"><h2>Пользователи с диалогами</h2><ul class="user-list"></ul></div>`;
+
+    const userListEl = root.querySelector('.user-list');
+
+    dialogs.forEach(dialog => {
+      const li = document.createElement('li');
+      li.textContent = `${dialog.user?.username || dialog.user_id} — ${new Date(dialog.updated_at).toLocaleString()} — статус: ${dialog.status}`;
+      li.addEventListener('click', () => {
+        openAdminDialog(dialog);
+      });
+      userListEl.appendChild(li);
+    });
+  }
+
+  async function openAdminDialog(dialog) {
+    currentDialog = dialog;
+    await fetchMessages(dialog.id);
+
+    root.innerHTML = '';
+    renderHeader();
+
+    const main = document.createElement('main');
+    main.style.flexDirection = 'column';
+
+    const msgsEl = renderMessages();
+    main.appendChild(msgsEl);
+
+    // Кнопки статуса диалога
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'dialog-actions';
+
+    const btnPending = document.createElement('button');
+    btnPending.textContent = 'На рассмотрении';
+    btnPending.onclick = async () => {
+      await updateDialogStatus(currentDialog.id, 'pending');
+      alert('Статус изменён на "На рассмотрении"');
+      await refreshUI();
+    };
+    statusDiv.appendChild(btnPending);
+
+    const btnClosed = document.createElement('button');
+    btnClosed.textContent = 'Закончен';
+    btnClosed.onclick = async () => {
+      await updateDialogStatus(currentDialog.id, 'closed');
+      alert('Диалог закрыт');
+      await refreshUI();
+    };
+    statusDiv.appendChild(btnClosed);
+
+    main.appendChild(statusDiv);
+
+    // Текстовое поле и отправка сообщения
+    const footer = document.createElement('footer');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Ответить...';
+    input.autocomplete = 'off';
+
+    footer.appendChild(input);
+
+    const sendBtn = document.createElement('button');
+    sendBtn.title = 'Отправить сообщение';
+    sendBtn.ariaLabel = 'Отправить сообщение';
+    sendBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" style="width:20px; height:20px;">
+      <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+    </svg>`;
+    footer.appendChild(sendBtn);
+
+    sendBtn.addEventListener('click', async () => {
+      if (!input.value.trim()) return;
+      await sendMessage(input.value.trim(), 'admin');
+      input.value = '';
+      await refreshUI();
+    });
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    root.appendChild(main);
+    root.appendChild(footer);
+  }
+
+  async function refreshUI() {
+    await fetchDialogs();
+    if (isAdmin) {
+      renderAdminPanel();
+    } else {
+      renderUserUI();
+    }
+  }
+
+  async function init() {
+    try {
+      await getOrCreateUser();
+      await refreshUI();
+    } catch(e) {
+      root.innerHTML = `<p style="padding:20px; text-align:center; color:#f00;">Ошибка: ${e.message}</p>`;
+      console.error(e);
+    }
+  }
+
+  init();
+
+</script>
+</body>
+</html>
