@@ -15,7 +15,7 @@ async def send_welcome(message: types.Message):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
     await message.answer("<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'pay')
@@ -35,7 +35,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
     period_text = {'1': '1 месяц', '6': '6 месяцев', '12': '12 месяцев'}[subscription_period]
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("Карта (любая валюта)", callback_data='pay_card'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
     keyboard.add(InlineKeyboardButton("📜 Договор оферты", callback_data='offer_agreement'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_pay'))
     await bot.answer_callback_query(callback_query.id)
@@ -45,7 +45,7 @@ async def process_subscription_callback(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'more_info')
 async def process_more_info_callback(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
     keyboard.add(InlineKeyboardButton("🔙 Назад", callback_data='back_to_start'))
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
@@ -56,7 +56,7 @@ async def process_back_to_start_callback(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("💳 Оплатить доступ", callback_data='pay'))
     keyboard.add(InlineKeyboardButton("ℹ️ Подробнее о канале", callback_data='more_info'))
-    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", callback_data='ask_question'))
+    keyboard.add(InlineKeyboardButton("❓ Задать вопрос", url='https://t.me/OSNOVAprivate_bot/formulaprivate'))
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text="<b>Приветствую.</b> Ты в официальном боте по оплате доступа к каналу ОСНОВА - где знания не просто ценные, а, жизненно необходимые.\n\n💳 Подписка - ежемесячная 1500₽ или ~15$, оплата принимается в любой валюте и крипте.\n⬇️ Ниже — кнопка. Жмешь — и проходишь туда, где люди не ноют, а ебут этот мир в обе щеки.\n\n💳 Подписка - ежемесячная 1500₽ или ~14$, оплату принимаем в любой валюте, крипте, звездах.\nНажимай кнопку ниже ⬇️", parse_mode=ParseMode.HTML, reply_markup=keyboard)
