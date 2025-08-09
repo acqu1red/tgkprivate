@@ -17,14 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminList = document.getElementById('admin-list');
 
     // Подключение к Supabase
-    const { createClient } = supabase;
     const supabaseUrl = 'https://uhhsrtmmuwoxsdquimaa.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoaHNydG1tdXdveHNkcXVpbWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTMwMzcsImV4cCI6MjA3MDI2OTAzN30.5xxo6g-GEYh4ufTibaAtbgrifPIU_ilzGzolAdmAnm8';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // Функция для добавления сообщения в Supabase
     async function addMessageToSupabase(userId, messageText) {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('messages')
             .insert([{ user_id: userId, message_text: messageText }]);
         if (error) console.error('Ошибка при добавлении сообщения:', error);
@@ -33,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для получения списка пользователей
     async function getUsersFromSupabase() {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('users')
             .select('*');
         if (error) console.error('Ошибка при получении пользователей:', error);
