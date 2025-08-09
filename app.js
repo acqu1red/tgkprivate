@@ -73,17 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
     else console.log('Сообщение добавлено:', data);
   }
 
-  function adminReply(userText) {
-    const replies = [
-      'Спасибо за сообщение, я сейчас посмотрю.',
-      'Понял, держите меня в курсе.',
-      'Могу помочь с этим вопросом, расскажите подробнее.',
-      'Ваш запрос принят, скоро свяжемся.',
-      'Спасибо за обратную связь!',
-    ];
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    setTimeout(() => { addMessage(reply, false); }, 1200);
-  }
+  // Удаляем автоматические ответы
+  // function adminReply(userText) {
+  //   const replies = [
+  //     'Спасибо за сообщение, я сейчас посмотрю.',
+  //     'Понял, держите меня в курсе.',
+  //     'Могу помочь с этим вопросом, расскажите подробнее.',
+  //     'Ваш запрос принят, скоро свяжемся.',
+  //     'Спасибо за обратную связь!',
+  //   ];
+  //   const reply = replies[Math.floor(Math.random() * replies.length)];
+  //   setTimeout(() => { addMessage(reply, false); }, 1200);
+  // }
 
   function openUserDialog(username) {
     const dialog = document.createElement('div');
@@ -119,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (text.length === 0) return;
     addMessage(text, true);
     input.value = '';
-    adminReply(text);
+    const userId = window.Telegram.WebApp.initDataUnsafe.user.id; // Получаем реальный user_id
     try {
-      await addMessageToSupabase(1, text); // TODO: заменить 1 на реальный user_id
+      await addMessageToSupabase(userId, text);
     } catch (e) {
       console.warn('Ошибка при сохранении в Supabase:', e);
     }
