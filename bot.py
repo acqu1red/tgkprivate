@@ -72,13 +72,5 @@ async def process_back_to_pay_callback(callback_query: types.CallbackQuery):
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text="💵 Стоимость подписки на Базу\n1 месяц 1500 рублей\n6 месяцев 8000 рублей\n12 месяцев 10 000 рублей\n\n*цена в долларах/евро - конвертируется по нынешнему курсу\n\n*оплачивай любой картой в долларах/евро/рублях, бот сконвертирует сам\n\nОплатить и получить доступ\n👇👇👇", reply_markup=keyboard)
 
-@dp.callback_query_handler(lambda c: c.data == 'ask_question')
-async def process_ask_question_callback(callback_query: types.CallbackQuery):
-    # Direct link to the miniapp
-    miniapp_url = 't.me/OSNOVAprivate_bot/formulaprivate'
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.from_user.id,
-                           text=f'Откройте miniapp по следующей ссылке: {miniapp_url}')
-
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
